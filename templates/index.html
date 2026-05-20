@@ -66,10 +66,11 @@
                 <!-- Product Price formatted neatly -->
                 <p class="text-xl font-extrabold text-gray-900">${{ product.price }}</p>
                 
-                <!-- Add to Cart Button Placeholder -->
-                <button type="button" class="inline-flex items-center justify-center p-2 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 z-30 relative">
+                <!-- Add to Cart Action -->
+                <!-- We wrap the button inside an anchor link to hit our add_to_cart view route -->
+                <a href="{% url 'add_to_cart' product.id %}" class="inline-flex items-center justify-center p-2 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 z-30 relative">
                     <i class="fa-solid fa-cart-plus text-sm"></i>
-                </button>
+                </a>
             </div>
         </div>
         

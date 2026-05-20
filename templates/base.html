@@ -89,6 +89,35 @@
         </div>
     </footer>
 
+    <!-- Place holder block to allow specific pages to append script tags before closing the body -->
     {% block extra_scripts %}{% endblock %}
+
+    <!-- SweetAlert2 CDN for beautiful popup notifications -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Global Messages Listener -->
+    <!-- This checks if our views (like add_to_cart) sent any messages, and if so, pops them up beautifully -->
+    {% if messages %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            {% for message in messages %}
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: '{{ message.tags|default:"info" }}', // Django tags ('success', 'error', 'warning', 'info') perfectly match SweetAlert icons!
+                    title: '{{ message|escapejs }}',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    customClass: {
+                        popup: 'rounded-xl shadow-md border border-gray-100',
+                        title: 'text-sm font-semibold font-sans text-gray-800'
+                    }
+                });
+            {% endfor %}
+        });
+    </script>
+    {% endif %}
+
 </body>
 </html>

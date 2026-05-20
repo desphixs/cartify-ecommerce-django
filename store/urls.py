@@ -10,4 +10,7 @@ from . import views
 # ==============================================================================
 urlpatterns = [
     path('', views.index_view, name='index'),
+    # This path expects an integer (like 1, 2, 3) which represents the product ID.
+    # When a user goes to /add-to-cart/5/, Django will grab product #5 and send it to our view.
+    path('add-to-cart/<int:product_id>/', views.add_to_cart, name='add_to_cart'),
 ]
