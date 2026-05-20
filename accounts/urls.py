@@ -28,9 +28,6 @@ urlpatterns = [
     # We give it a unique name 'login' so we can refer to this path easily in templates
     # and redirect statements (like our register_user view redirecting to 'login'!).
     path('login/', views.login_user, name='login'),
-    # We map the root URL path '' directly to our public index_view function.
-    # This represents the landing/home page of our web application.
-    path('', views.index_view, name='index'),
     # We map the URL path 'dashboard/' directly to our protected dashboard_view function.
     # We give it a unique name 'dashboard' to handle post-login redirects and navigation links.
     path('dashboard/', views.dashboard_view, name='dashboard'),

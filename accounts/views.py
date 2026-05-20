@@ -155,24 +155,6 @@ def login_user(request):
     return render(request, 'login.html')
 
 
-# ==============================================================================
-# REAL-WORLD ANALOGY: The Public Plaza (Index Page)
-# ------------------------------------------------------------------------------
-# Imagine our home/index view is like the public plaza outside our member club.
-# Anyone walking on the street (authenticated members and completely anonymous guests)
-# is allowed to stand in the plaza and look around (this view is public).
-# However, we display a beautiful information board (our dynamic header):
-# 1. If they are a registered member wearing their wristband, we show them their name and a
-#    quick link to enter the private VIP Lounge (Go to Dashboard).
-# 2. If they are an unauthenticated guest, we show them signposts to get registered or sign in.
-# ==============================================================================
-
-# We define the index_view to handle the public home page of our application.
-def index_view(request):
-    # This view is completely public, so we don't put any decorators here.
-    # We simply load and return our home/index page template.
-    return render(request, 'index.html')
-
 
 # ==============================================================================
 # REAL-WORLD ANALOGY: The VIP Private Lounge (Protected Dashboard View)
