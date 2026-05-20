@@ -2,38 +2,88 @@
 {% block title %}Welcome to Cartify{% endblock %}
 
 {% block content %}
-<div class="flex items-center justify-center min-h-[80vh] bg-white relative overflow-hidden">
-   
-    
-    <div class="relative z-10 w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div class="inline-flex items-center justify-center px-4 py-1.5 mb-8 text-xs font-semibold tracking-wide text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-full uppercase">
-            <i class="fa-solid fa-star mr-2 text-indigo-500"></i> The New Standard of Shopping
-        </div>
+
+
+<!-- ==============================================================================
+     REAL-WORLD ANALOGY: The Store Shelves
+     ------------------------------------------------------------------------------
+     Imagine you walk past the storefront window (our hero section above) and step 
+     inside the store. You see neat rows of shelves displaying all the items for sale.
+     This section below acts exactly like those shelves! We loop through the 'products' 
+     box we received from the views.py warehouse, and for each item, we build a clean
+     display card so the customer can see it and buy it.
+     ============================================================================== -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="text-center mb-12">
+        <h2 class="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">Our Catalog</h2>
+        <p class="mt-4 max-w-2xl text-xl text-gray-500 mx-auto">Everything you need, right at your fingertips.</p>
+    </div>
+
+    <!-- We use a CSS Grid layout to automatically create responsive columns for our products.
+         On small phones, it's 1 column. On tablets (sm), 2 columns. On desktop (lg), 3 columns! -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-8">
         
-        <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-gray-900 mb-6">
-            Premium Products<br />
-            <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-indigo-400">Delivered to You</span>
-        </h1>
-        
-        <p class="text-lg md:text-xl text-gray-500 mb-10 max-w-2xl mx-auto">
-            Discover a curated collection of high-quality electronics and accessories. Upgrade your lifestyle with Cartify today.
-        </p>
-        
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a href="#" class="w-full sm:w-auto flex items-center justify-center px-8 py-3.5 border border-transparent text-base font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">
-                Shop Now <i class="fa-solid fa-arrow-right ml-2 text-sm"></i>
-            </a>
+        <!-- We use a Django template 'for' loop to iterate through every product we received -->
+        {% for product in products %}
+        <div class="group relative bg-white border border-gray-200 rounded-2xl p-4 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col">
             
-            {% if not user.is_authenticated %}
-            <a href="{% url 'register' %}" class="w-full sm:w-auto flex items-center justify-center px-8 py-3.5 border border-gray-200 text-base font-semibold rounded-xl text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2">
-                Sign Up
-            </a>
-            {% else %}
-            <a href="{% url 'dashboard' %}" class="w-full sm:w-auto flex items-center justify-center px-8 py-3.5 border border-gray-200 text-base font-semibold rounded-xl text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2">
-                Go to Dashboard
-            </a>
-            {% endif %}
+            <!-- Product Image Display -->
+            <div class="aspect-w-4 aspect-h-3 rounded-xl overflow-hidden relative">
+                <!-- We check if the product has an image uploaded -->
+                {% if product.image %}
+                    <!-- If it does, we display it, stretching it to cover the space cleanly -->
+                    <img src="{{ product.image.url }}" alt="{{ product.title }}" class="object-contain w-full h-48 group-hover:scale-105 transition-transform duration-500">
+                {% else %}
+                    <!-- If there is no image, we show a clean placeholder icon -->
+                    <div class="flex items-center justify-center h-48 w-full bg-gray-50 text-gray-400">
+                        <i class="fa-solid fa-image text-4xl"></i>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Product Details Container -->
+            <div class="mt-6 flex flex-col flex-grow">
+                <!-- Product Category Badge -->
+                <p class="text-xs font-bold text-indigo-600 uppercase tracking-wide mb-1">{{ product.category.name }}</p>
+                
+                <!-- Product Title -->
+                <h3 class="text-lg font-bold text-gray-900 leading-tight">
+                    <a href="#">
+                        <!-- We stretch a transparent link over the entire card so clicking anywhere on the card works! -->
+                        <span aria-hidden="true" class="absolute inset-0"></span>
+                        {{ product.title }}
+                    </a>
+                </h3>
+                
+                <!-- Product Description (Truncated using line-clamp so it doesn't break our clean layout) -->
+                <p class="mt-2 text-sm text-gray-500 line-clamp-2">
+                    {{ product.description|default:"No description available." }}
+                </p>
+            </div>
+
+            <!-- Price and Action Area (Pushed to the bottom using flex-grow on the details above) -->
+            <div class="mt-6 flex items-center justify-between border-t border-gray-100 pt-4 relative z-20">
+                <!-- Product Price formatted neatly -->
+                <p class="text-xl font-extrabold text-gray-900">${{ product.price }}</p>
+                
+                <!-- Add to Cart Button Placeholder -->
+                <button type="button" class="inline-flex items-center justify-center p-2 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 z-30 relative">
+                    <i class="fa-solid fa-cart-plus text-sm"></i>
+                </button>
+            </div>
         </div>
+        
+        <!-- We provide an 'empty' fallback in case the warehouse (database) has 0 products inside it! -->
+        {% empty %}
+        <div class="col-span-full text-center py-12">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 text-gray-400 mb-4">
+                <i class="fa-solid fa-box-open text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900">No products found</h3>
+            <p class="mt-1 text-sm text-gray-500">Check back later for new arrivals.</p>
+        </div>
+        {% endfor %}
+        
     </div>
 </div>
 {% endblock %}

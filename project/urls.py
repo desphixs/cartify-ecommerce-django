@@ -50,3 +50,23 @@ urlpatterns = [
     # directly at the root level (e.g., 'http://127.0.0.1:8000/register/').
     path('', include('accounts.urls')),
 ]
+
+# We import settings and static to tell Django how to serve uploaded media files during development
+from django.conf import settings
+from django.conf.urls.static import static
+
+# ==============================================================================
+# REAL-WORLD ANALOGY: The Art Gallery Guide
+# ------------------------------------------------------------------------------
+# In production (live server), Django refuses to serve uploaded images (media files).
+# It's like having an art gallery where the security guard (Django) says "I don't
+# handle paintings, I only handle visitors."
+# 
+# For development on our local computer, we need to temporarily give the security 
+# guard a side-job as an art guide. We do this by appending `static(settings.MEDIA_URL, ...)`
+# to our url patterns. This tells Django: "When someone asks for an image, go to 
+# the MEDIA_ROOT folder, find it, and hand it to them!"
+# ==============================================================================
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

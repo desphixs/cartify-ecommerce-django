@@ -117,7 +117,20 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+# Add a list of additional directories where Django should look for static files
+STATICFILES_DIRS = [BASE_DIR / 'static']
 
+# ==============================================================================
+# REAL-WORLD ANALOGY: The File Cabinet for Uploads
+# ------------------------------------------------------------------------------
+# Static files (like our CSS and JS) are things we as developers put into the 
+# project. Media files are things our USERS upload (like product images).
+# 
+# MEDIA_URL is the digital address prefix for these files (e.g., /media/laptop.png).
+# MEDIA_ROOT is the physical file cabinet folder on our computer where they are saved.
+# ==============================================================================
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 # ==============================================================================
 # REAL-WORLD ANALOGY: Updating the Security Guard's Manual
 # ------------------------------------------------------------------------------
