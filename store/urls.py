@@ -37,4 +37,18 @@ urlpatterns = [
     path('increment-cart-item/<int:item_id>/', views.increment_cart_item, name='increment_cart_item'),
     path('decrement-cart-item/<int:item_id>/', views.decrement_cart_item, name='decrement_cart_item'),
     path('delete-cart-item/<int:item_id>/', views.delete_cart_item, name='delete_cart_item'),
+    # ==============================================================================
+    # REAL-WORLD ANALOGY: The Billing Desk and Invoice Receipt
+    # ------------------------------------------------------------------------------
+    # When you decide you're ready to buy, the checkout sign points you first to 
+    # the Billing Desk (`checkout/initiate/`) where you enter your shipping details
+    # to package everything up into an order invoice. Once that invoice is written,
+    # the clerk hands you a slip with an order number and guides you to the dynamic
+    # Review & Payment Counter (`checkout/<str:order_id>/`) to look over the details
+    # and tap "Pay Now".
+    # ==============================================================================
+    # 1. Checkout Initiate Route (This handles form submissions from the cart page and builds the order records)
+    path('checkout/initiate/', views.checkout_initiate, name='checkout_initiate'),
+    # 2. Checkout Invoice Route (This displays the unpaid order details dynamically based on its 7-digit ID)
+    path('checkout/<str:order_id>/', views.checkout_page, name='checkout_page'),
 ]

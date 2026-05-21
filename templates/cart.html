@@ -99,9 +99,42 @@
 
             <!-- RIGHT COLUMN: ORDER SUMMARY SIDEBAR (Occupies 4 out of 12 grid spaces on large screens) -->
             <div class="lg:col-span-4">
-                <!-- Sticky summary container card -->
-                <div class="bg-white border border-gray-200 rounded-3xl p-6 shadow-md space-y-6 sticky top-24">
+                <!-- We wrap the shipping details and the calculations in a form to submit to our checkout_initiate view -->
+                <!-- The action attribute points directly to our checkout_initiate route, and we use method="POST" for safety -->
+                <form action="{% url 'checkout_initiate' %}" method="POST" class="bg-white border border-gray-200 rounded-3xl p-6 shadow-md space-y-6 sticky top-24">
+                    <!-- Django requires the {% csrf_token %} tag inside all POST forms to prevent malicious cross-site request attacks -->
+                    {% csrf_token %}
+                    
                     <h2 class="text-xl font-bold text-gray-900 border-b border-gray-100 pb-4">Order Summary</h2>
+
+                    <!-- Shipping details input fields section, designed to collect the student's name and delivery address -->
+                    <div class="space-y-4 border-b border-gray-100 pb-6">
+                        <h3 class="text-xs font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-1.5">
+                            <i class="fa-solid fa-truck"></i> Shipping Information
+                        </h3>
+                        
+                        <!-- Full Name Input Group -->
+                        <div class="space-y-1">
+                            <label for="full_name" class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">Full Name</label>
+                            <div class="relative rounded-xl shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-user text-gray-400 text-xs"></i>
+                                </div>
+                                <input type="text" name="full_name" id="full_name" required class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-200" placeholder="John Doe">
+                            </div>
+                        </div>
+
+                        <!-- Shipping Address Input Group -->
+                        <div class="space-y-1">
+                            <label for="address" class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">Delivery Address</label>
+                            <div class="relative rounded-xl shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-location-dot text-gray-400 text-xs"></i>
+                                </div>
+                                <input type="text" name="address" id="address" required class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 transition-all duration-200" placeholder="123 Main Street, New York, NY">
+                            </div>
+                        </div>
+                    </div>
                     
                     <!-- Line item calculations -->
                     <div class="space-y-4 font-medium text-sm">
@@ -125,9 +158,10 @@
                     </div>
 
                     <!-- Checkout Call-To-Action Button -->
-                    <a href="#" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-2xl transition-all duration-200 shadow-sm flex items-center justify-center gap-2 text-base focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600">
+                    <!-- Changing this from an anchor tag to a button with type="submit" so it properly triggers our form POST -->
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-2xl transition-all duration-200 shadow-sm flex items-center justify-center gap-2 text-base focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600">
                         Proceed to Checkout <i class="fa-solid fa-arrow-right"></i>
-                    </a>
+                    </button>
 
                     <!-- Safe payment visual reassurance badges -->
                     <div class="text-center">
@@ -135,7 +169,7 @@
                             <i class="fa-solid fa-lock text-green-500"></i> Secure Checkout Guaranteed
                         </p>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
 

@@ -104,11 +104,28 @@ class CartItem(models.Model):
         return f"{self.quantity} x {self.product.title}"
 
 
+import random # Import the random module to generate random integers for our unique order ID
+
+# Helper function to generate a unique 7-digit order ID containing only numbers
+def generate_unique_order_id():
+    # We use a while loop that runs forever until we find an ID that is not already in the database
+    while True:
+        # Generate a random 7-digit integer as a string (between 1000000 and 9999999 inclusive)
+        new_id = str(random.randint(1000000, 9999999))
+        
+        # Check the database if this generated ID already exists in any Order record
+        if not Order.objects.filter(order_id=new_id).exists():
+            # If the ID does not exist, it is unique! We return it and exit the function
+            return new_id
+
 # --- 5. ORDER MODEL ---
 # Order represents a finalized purchase.
 class Order(models.Model):
     # We use SET_NULL so that if a user deletes their account, we don't lose the financial record of their past orders!
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    # Unique 7-digit order ID containing only numbers, with unique=True to prevent duplicates in the database
+    order_id = models.CharField(max_length=7, unique=True, null=True, blank=True, help_text="Unique 7-digit order identifier")
     
     # Shipping Information Fields (Required for delivery)
     full_name = models.CharField(max_length=100)
@@ -125,8 +142,17 @@ class Order(models.Model):
     # BooleanField tracks if the user has successfully paid for the order yet.
     is_paid = models.BooleanField(default=False)
 
+    # We override the built-in save method to automatically assign a unique 7-digit ID when the order is first created
+    def save(self, *args, **kwargs):
+        # Check if the order_id has not been set yet
+        if not self.order_id:
+            # Call our helper generator function to assign a unique 7-digit number
+            self.order_id = generate_unique_order_id()
+        # Call the parent class's standard save method to store the record in the database
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"Order {self.id} by {self.full_name}"
+        return f"Order {self.order_id} by {self.full_name}"
 
 
 # --- 6. ORDER ITEM MODEL ---
@@ -144,6 +170,19 @@ class OrderItem(models.Model):
     # CRITICAL: We save the price *at the moment of purchase*.
     # If the owner changes the Product price a year later, we don't want old orders to look like they paid the new price!
     price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    # ==============================================================================
+    # REAL-WORLD ANALOGY: Line Item Subtotal on a Printed Invoice Receipt
+    # ------------------------------------------------------------------------------
+    # Similar to how the CartItem calculates dynamic prices, when reviewing a printed
+    # receipt, you want to see exactly how much you paid for that row (e.g. 2 books
+    # at $15.00 each equals a subtotal of $30.00). 
+    # This property performs this calculation using the locked-in historical price.
+    # ==============================================================================
+    @property
+    def subtotal(self):
+        # Multiply the frozen purchase price by the quantity ordered
+        return self.price * self.quantity
 
     def __str__(self):
         return f"Item {self.id} for Order {self.order.id}"
