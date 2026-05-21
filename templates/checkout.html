@@ -160,11 +160,14 @@
                         </div>
                     </div>
 
-                    <!-- Static Payment Trigger Button -->
-                    <!-- In a future task, this button will fire the actual payment module or form submit -->
-                    <button type="button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-2xl transition-all duration-200 shadow-sm flex items-center justify-center gap-2 text-base focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 relative overflow-hidden group">
-                        <i class="fa-solid fa-shield-halved"></i> Pay Now
-                    </button>
+                    <!-- Secure Stripe Payment Trigger Form -->
+                    <!-- This form POSTs to our create_checkout_session view which securely generates the Stripe portal redirect -->
+                    <form action="{% url 'create_checkout_session' order.order_id %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-2xl transition-all duration-200 shadow-sm flex items-center justify-center gap-2 text-base focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 relative overflow-hidden group">
+                            <i class="fa-solid fa-credit-card"></i> Pay Now with Stripe
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>

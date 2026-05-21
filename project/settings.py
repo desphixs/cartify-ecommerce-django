@@ -175,3 +175,32 @@ AUTH_USER_MODEL = 'accounts.User'
 # By passing the URL name 'login', Django will look up the path mapped to name='login' in our URLs.
 LOGIN_URL = 'login'
 
+
+# ==============================================================================
+# REAL-WORLD ANALOGY: Loading the Safe Combination from an External Vault Key
+# ------------------------------------------------------------------------------
+# In a secure building, you don't paint the combination to the main cash vault
+# directly on the office walls (the source code file `settings.py`). That would 
+# allow anyone walking past to steal it (or hackers reading your Git repo).
+# 
+# Instead, you store the combination on a separate slip of paper inside a private
+# physical vault (.env file), and only read it into memory when the system starts up.
+# 
+# We use Python's built-in `os` and the external `dotenv` library to open the 
+# private .env folder, grab the Stripe API keys, and store them securely in our
+# settings memory.
+# ==============================================================================
+
+import os # Standard Python module to interact with environment variables
+from dotenv import load_dotenv # Load variables from a .env file into os.environ
+
+# Load the keys inside our private .env file using our BASE_DIR folder path
+load_dotenv(BASE_DIR / '.env')
+
+# Stripe Publishable Key: Safe to share with the frontend browser templates
+STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', 'pk_test_placeholder_key_here')
+
+# Stripe Secret Key: MUST be kept hidden on the server, never exposed to users!
+STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', 'sk_test_placeholder_key_here')
+
+

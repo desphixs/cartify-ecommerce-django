@@ -142,6 +142,10 @@ class Order(models.Model):
     # BooleanField tracks if the user has successfully paid for the order yet.
     is_paid = models.BooleanField(default=False)
 
+    # stripe_session_id CharField stores the unique Stripe Checkout Session identifier.
+    # This helps us match our database Order with the actual Stripe session when verifying payment.
+    stripe_session_id = models.CharField(max_length=255, null=True, blank=True, help_text="Stripe Checkout Session identifier")
+
     # We override the built-in save method to automatically assign a unique 7-digit ID when the order is first created
     def save(self, *args, **kwargs):
         # Check if the order_id has not been set yet

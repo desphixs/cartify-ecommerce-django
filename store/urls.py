@@ -51,4 +51,21 @@ urlpatterns = [
     path('checkout/initiate/', views.checkout_initiate, name='checkout_initiate'),
     # 2. Checkout Invoice Route (This displays the unpaid order details dynamically based on its 7-digit ID)
     path('checkout/<str:order_id>/', views.checkout_page, name='checkout_page'),
+    
+    # ==============================================================================
+    # REAL-WORLD ANALOGY: The Bank Gateways and Success Screens
+    # ------------------------------------------------------------------------------
+    # When you click the "Pay Now" button on your invoice, you pass through the 
+    # payment gate conveyor belt (`checkout/payment/<str:order_id>/`). This creates 
+    # the secure Stripe session and guides your browser to their armored payment page.
+    # 
+    # After filling in your card details, the bank vehicle drives you back to the
+    # store's local Customer Service counter (`payment/status/`), which checks the 
+    # transaction status and prints a big "APPROVED" or "DECLINED" stamp on your order!
+    # ==============================================================================
+    # 3. Create Stripe Checkout Session Route (Processes and redirects to Stripe hosted payment form)
+    path('checkout/payment/<str:order_id>/', views.create_checkout_session, name='create_checkout_session'),
+    # 4. Payment Status Callback Route (Fetches session ID from Stripe to check if transaction succeeded)
+    path('payment/status/', views.payment_status, name='payment_status'),
 ]
+

@@ -7,6 +7,16 @@ from store.models import Product, Cart, CartItem, Order, OrderItem
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
+# We import stripe to connect to the Stripe Payment Gateway APIs
+import stripe
+
+# We import settings to read our custom configuration values like STRIPE_SECRET_KEY
+from django.conf import settings
+
+# We import reverse to programmatically generate complete internal URL paths for redirects
+from django.urls import reverse
+
+
 
 # ==============================================================================
 # REAL-WORLD ANALOGY: The Store Front Window
@@ -299,5 +309,131 @@ def checkout_page(request, order_id):
     
     # 4. Render the modern, clean `checkout.html` page, passing along the invoice context!
     return render(request, 'checkout.html', context)
+
+
+# ==============================================================================
+# REAL-WORLD ANALOGY: The Bank Redirect and the Paid Receipt Verification
+# ------------------------------------------------------------------------------
+# Imagine walking up to a store clerk to buy some items. The clerk writes down 
+# the invoice (Order) and hands you a payment portal link (Stripe Checkout Session).
+# Since the store doesn't handle credit card numbers themselves (too dangerous!), 
+# they redirect you directly to a secure, armored bank vehicle outside (Stripe Page).
+# 
+# Once you tap your card and the bank processes the payment successfully, the bank 
+# redirects you back to the store's Customer Service counter (our Payment Status View).
+# You hand the clerk the transaction receipt token (the session_id). 
+# The clerk calls the bank on a secure telephone line to confirm: "Hey bank, did 
+# checkout session 12345 actually pay?"
+# If the bank says "Yes, confirmed!", the clerk stamps your receipt as "PAID" 
+# (order.is_paid = True) and hands you your items with a beautiful success banner!
+# ==============================================================================
+
+@login_required
+def create_checkout_session(request, order_id):
+    # 1. We fetch the specific unpaid order belonging to the current logged-in user
+    order = get_object_or_404(Order, order_id=order_id, user=request.user, is_paid=False)
+    
+    # 2. We configure the Stripe secret key stored safely inside our settings variables
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    
+    # 3. We initialize an empty list to compile all the products of this order for Stripe
+    line_items = []
+    
+    # 4. We loop through each individual OrderItem snapshot linked to our parent Order
+    for item in order.items.all():
+        # We append each item formatted specifically as a dictionary matching Stripe's API rules
+        line_items.append({
+            'price_data': {
+                'currency': 'usd', # We define the checkout currency as US Dollars
+                'product_data': {
+                    'name': item.product.title, # We pass the catalog title of the product
+                },
+                # Stripe expects prices in "cents" (integers), so we multiply by 100
+                'unit_amount': int(item.price * 100),
+            },
+            'quantity': item.quantity, # We pass the exact quantity purchased
+        })
+        
+    try:
+        # 5. We call Stripe's Checkout API to build a secure hosted payment session page
+        session = stripe.checkout.Session.create(
+            payment_method_types=['card'], # We allow standard credit card payments
+            line_items=line_items, # We hand over our compiled items shopping list
+            mode='payment', # We state that this is a one-time product payment transaction
+            # Once payment is complete, Stripe redirects the user back to our local status view.
+            # We append Stripe's dynamic template tag '{CHECKOUT_SESSION_ID}' to the URL.
+            # Stripe will automatically swap this placeholder with the actual session token upon redirect!
+            success_url=request.build_absolute_uri(reverse('payment_status')) + '?session_id={CHECKOUT_SESSION_ID}',
+            # If the user clicks back or cancels, we redirect them back to our local checkout review screen
+            cancel_url=request.build_absolute_uri(reverse('checkout_page', args=[order.order_id])),
+            customer_email=request.user.email, # Pre-fill the customer's email on Stripe's page
+            metadata={
+                'order_id': order.order_id # We attach our internal database order ID for audit logs
+            }
+        )
+        
+        # 6. We record the generated Stripe Session ID on our database Order record
+        order.stripe_session_id = session.id
+        order.save() # Save the database record to lock in the session mapping!
+        
+        # 7. Redirect the user's browser directly to Stripe's gorgeous, secure hosted payment page!
+        return redirect(session.url, code=303)
+        
+    except Exception as e:
+        # If any API or connection exception occurs, we catch it and display a friendly alert
+        messages.error(request, f"Stripe integration failed: {str(e)}")
+        # Redirect the user right back to the checkout details page to review and retry
+        return redirect('checkout_page', order_id=order.order_id)
+
+
+@login_required
+def payment_status(request):
+    # 1. We extract the session_id query parameter returned from the Stripe checkout page redirect
+    session_id = request.GET.get('session_id')
+    
+    # 2. If no session_id exists in the URL, the user accessed this page incorrectly. Redirect to home!
+    if not session_id:
+        messages.warning(request, "No transaction session identifier was found.")
+        return redirect('index')
+        
+    # 3. We look up the order in our database that maps to this specific Stripe session
+    order = get_object_or_404(Order, stripe_session_id=session_id, user=request.user)
+    
+    # 4. We configure our Stripe secret API key to fetch session details securely
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    
+    try:
+        # 5. We query Stripe's server directly using the session ID to check the actual payment status
+        session = stripe.checkout.Session.retrieve(session_id)
+        
+        # 6. If Stripe confirms the payment status is 'paid' or checkout is 'complete'
+        if session.payment_status == 'paid' or session.status == 'complete':
+            # We securely stamp the database order as paid!
+            order.is_paid = True
+            order.save() # Commit the paid status to the database!
+            
+            # Pack the successful payment variables into our page context block
+            context = {
+                'order': order,
+                'status': 'success',
+            }
+        else:
+            # If the session reports unpaid or incomplete, we treat it as failed
+            context = {
+                'order': order,
+                'status': 'failed',
+            }
+            
+    except Exception as e:
+        # If Stripe's server is unreachable or errors occur, we treat the verification as failed
+        context = {
+            'order': order,
+            'status': 'failed',
+            'error': str(e),
+        }
+        
+    # 7. Render the modern, unified `payment_status.html` page passing along the results!
+    return render(request, 'payment_status.html', context)
+
 
 
