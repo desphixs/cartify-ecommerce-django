@@ -119,3 +119,74 @@ def view_cart(request):
     
     # 6. Render the dedicated `cart.html` review page, passing along our context data box!
     return render(request, 'cart.html', context)
+
+
+# ==============================================================================
+# REAL-WORLD ANALOGY: The Checkout Scanner Quantity Buttons
+# ------------------------------------------------------------------------------
+# Imagine walking up to a self-checkout machine. If you decide to buy another loaf 
+# of bread, you don't walk back to the shelf; you just tap the "+" button on the 
+# touch screen to increase the quantity. If you change your mind and want one less,
+# you tap the "-" button. If you decide you don't want any bread at all, you tap 
+# the red trash can icon to completely remove it from your tray.
+#
+# These three views perform these exact self-checkout touch-screen operations!
+# 1. `increment_cart_item` adds +1 to the quantity.
+# 2. `decrement_cart_item` subtracts 1 from the quantity, or removes it if it hits 0.
+# 3. `delete_cart_item` completely deletes the product row from the user's cart.
+# ==============================================================================
+
+@login_required
+def increment_cart_item(request, item_id):
+    # 1. Find the specific CartItem that the user clicked. If the item doesn't exist, throw a 404 error.
+    # We filter by cart__user=request.user to make sure a malicious user can't modify someone else's cart!
+    cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+    
+    # 2. Add 1 to the quantity field
+    cart_item.quantity += 1
+    
+    # 3. Save the updated quantity back to the database
+    cart_item.save()
+    
+    # 4. Send a sweet message to let the user know their cart has been updated
+    messages.success(request, f"Increased quantity of {cart_item.product.title}!")
+    
+    # 5. Send them right back to the cart review page to see the new total
+    return redirect('cart')
+
+
+@login_required
+def decrement_cart_item(request, item_id):
+    # 1. Find the specific CartItem that the user clicked, ensuring it belongs to them
+    cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+    
+    # 2. Check if they have more than 1 of this item in their cart
+    if cart_item.quantity > 1:
+        # Subtract 1 from the quantity
+        cart_item.quantity -= 1
+        cart_item.save()
+        messages.success(request, f"Decreased quantity of {cart_item.product.title}!")
+    else:
+        # 3. If quantity is exactly 1 and they decrement, delete the item entirely
+        # It's like saying "I have 1 bottle of water, if I remove 1, I have 0 bottles, so take it out of my basket!"
+        cart_item.delete()
+        messages.warning(request, f"Removed {cart_item.product.title} from your cart!")
+        
+    # 4. Redirect them back to their cart review page
+    return redirect('cart')
+
+
+@login_required
+def delete_cart_item(request, item_id):
+    # 1. Grab the specific CartItem ensuring it belongs to this logged-in user
+    cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+    
+    # 2. Completely remove the cart item from the database
+    cart_item.delete()
+    
+    # 3. Send a warning/danger message confirming the removal of the item
+    messages.warning(request, f"Removed {cart_item.product.title} from your cart!")
+    
+    # 4. Redirect the user back to their active cart page
+    return redirect('cart')
+

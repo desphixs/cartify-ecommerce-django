@@ -24,4 +24,17 @@ urlpatterns = [
     # `view_cart` clerk function to inspect their items.
     # ==============================================================================
     path('cart/', views.view_cart, name='cart'),
+    # ==============================================================================
+    # REAL-WORLD ANALOGY: The Cashier Belt Registers
+    # ------------------------------------------------------------------------------
+    # In a checkout lane, you have specialized conveyor belt lanes and registers for
+    # adding items, subtracting items, or scanning items straight to the trash box.
+    # 
+    # These three URLs serve as those electronic lane pathways! When a customer taps
+    # a plus, minus, or delete button in their browser, Django guides their request
+    # directly to the correct database view handler with the specific Item ID to process.
+    # ==============================================================================
+    path('increment-cart-item/<int:item_id>/', views.increment_cart_item, name='increment_cart_item'),
+    path('decrement-cart-item/<int:item_id>/', views.decrement_cart_item, name='decrement_cart_item'),
+    path('delete-cart-item/<int:item_id>/', views.delete_cart_item, name='delete_cart_item'),
 ]
