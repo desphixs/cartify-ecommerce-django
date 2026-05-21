@@ -63,6 +63,9 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                # Our custom context processor that continuously feeds the total cart quantity
+                # badge count to every page on our website!
+                'store.context_processors.cart_item_count',
             ],
         },
     },

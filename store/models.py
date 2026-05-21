@@ -83,6 +83,22 @@ class CartItem(models.Model):
     # PositiveIntegerField ensures they can't order a negative quantity. Defaults to 1.
     quantity = models.PositiveIntegerField(default=1)
 
+    # ==============================================================================
+    # REAL-WORLD ANALOGY: The Subtotal Line on a Receipt
+    # ------------------------------------------------------------------------------
+    # When you buy 3 shirts at $20.00 each, the receipt doesn't just show $20.00 and
+    # let you guess the cost. It shows a subtotal line that multiplies $20.00 by 3
+    # to display $60.00 for that row.
+    # 
+    # This `subtotal` property does exactly that dynamically! Whenever a template
+    # calls `{{ item.subtotal }}`, it automatically calculates the total cost of this
+    # specific item collection by multiplying the unit price by the quantity selected.
+    # ==============================================================================
+    @property
+    def subtotal(self):
+        # Multiply the individual product's unit price by the quantity selected in the cart item
+        return self.product.price * self.quantity
+
     def __str__(self):
         # Example: "2 x MacBook Pro"
         return f"{self.quantity} x {self.product.title}"
