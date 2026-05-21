@@ -67,5 +67,22 @@ urlpatterns = [
     path('checkout/payment/<str:order_id>/', views.create_checkout_session, name='create_checkout_session'),
     # 4. Payment Status Callback Route (Fetches session ID from Stripe to check if transaction succeeded)
     path('payment/status/', views.payment_status, name='payment_status'),
+    
+    # ==============================================================================
+    # REAL-WORLD ANALOGY: The Account Ledger Wing
+    # ------------------------------------------------------------------------------
+    # In a major department store, they have a secure "Customer loyalty service desk" 
+    # wing where members can ask to view their accounts dashboard or request a printed 
+    # detailed copy of a past transaction receipt.
+    # 
+    # These routes lead directly to those two customer services:
+    # 1. `/dashboard/` opens up the dynamic loyalty card statistics and order list.
+    # 2. `/order/<order_id>/` opens up the full itemized details of a single receipt.
+    # ==============================================================================
+    # 5. Customer Loyalty Dashboard Route
+    path('dashboard/', views.dashboard_view, name='dashboard'),
+    # 6. Detailed Receipt View Route
+    path('order/<str:order_id>/', views.order_detail_view, name='order_detail'),
+
 ]
 

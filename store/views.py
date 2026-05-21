@@ -436,4 +436,85 @@ def payment_status(request):
     return render(request, 'payment_status.html', context)
 
 
+# ==============================================================================
+# REAL-WORLD ANALOGY: The Customer Account Dashboard
+# ------------------------------------------------------------------------------
+# Imagine walking into your favorite store's loyalty program service desk.
+# The clerk pulls up your member profile and hands you a personalized binder containing:
+# 1. High-level summary cards showing:
+#    - Total Spent: How much you have successfully paid across all purchases.
+#    - Total Orders: The count of all orders you've ever initiated.
+#    - Pending Payments: Orders that were compiled but haven't been completed yet.
+# 2. A neatly sorted timeline checklist of your orders so you can see their
+#    individual dates, invoice totals, and payment status at a glance.
+#
+# This dashboard view does exactly that! It queries your order records, calculates
+# aggregate stats using Django's database calculators (like Sum), and packages
+# this information beautifully for your digital member screen.
+# ==============================================================================
+@login_required
+def dashboard_view(request):
+    # 1. Retrieve all orders initiated by the current authenticated user, sorted by date (newest first)
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    
+    # 2. Count the total number of orders in the database for this customer
+    total_orders = orders.count()
+    
+    # 3. Calculate the sum total spent by this user, only adding orders marked as successfully paid (is_paid=True)
+    # We import Sum aggregation tool from django.db.models to run a direct database sum operation
+    from django.db.models import Sum
+    total_spent = Order.objects.filter(user=request.user, is_paid=True).aggregate(Sum('total_price'))['total_price__sum'] or 0
+    
+    # 4. Count the number of pending orders that are still unpaid (is_paid=False)
+    pending_orders = Order.objects.filter(user=request.user, is_paid=False).count()
+    
+    # 5. Pack the statistics and the orders collection into our page context data box
+    context = {
+        'orders': orders,
+        'total_orders': total_orders,
+        'total_spent': total_spent,
+        'pending_orders': pending_orders,
+    }
+    
+    # 6. Render the upgraded customer dashboard template, passing along the context data
+    return render(request, 'dashboard.html', context)
+
+
+# ==============================================================================
+# REAL-WORLD ANALOGY: The Receipt Filing Cabinet Detail Sheet
+# ------------------------------------------------------------------------------
+# Imagine you pull out a single receipt from your home filing cabinet to inspect the
+# details of an old purchase. The receipt detail sheet doesn't just show the grand total;
+# it displays:
+# - The unique receipt order number.
+# - The shipping name and exact home address where the delivery was dispatched.
+# - An itemized list showing exactly which products were in the box, their quantities,
+#   and the specific individual prices you paid at the moment of checkout.
+# - Whether the payment process was successful (PAID) or remains incomplete (UNPAID).
+#
+# This order detail view serves as that digital inspection sheet! It fetches a specific
+# order by its 7-digit ID, verifies that it strictly belongs to you for security,
+# gathers all of its itemized line snapshots, and outputs them beautifully.
+# ==============================================================================
+@login_required
+def order_detail_view(request, order_id):
+    # 1. Fetch the specific order matching the unique 7-digit order_id and belonging to the logged-in user.
+    # This prevents users from sneaking into the database to inspect other people's receipts!
+    order = get_object_or_404(Order, order_id=order_id, user=request.user)
+    
+    # 2. Gather all individual itemized snapshots associated with this parent order
+    # We prefetch the related product details to optimize database query performance (joining tables cleanly)
+    order_items = order.items.all().select_related('product')
+    
+    # 3. Package the order metadata and line items into our template context data block
+    context = {
+        'order': order,
+        'order_items': order_items,
+    }
+    
+    # 4. Render the clean order detail page passing along our receipt inspection context!
+    return render(request, 'order_detail.html', context)
+
+
+
 

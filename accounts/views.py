@@ -156,27 +156,8 @@ def login_user(request):
 
 
 
-# ==============================================================================
-# REAL-WORLD ANALOGY: The VIP Private Lounge (Protected Dashboard View)
-# ------------------------------------------------------------------------------
-# Imagine the dashboard is the private VIP lounge inside our members club.
-# We hire a strict Bouncer (the @login_required decorator) to stand right in front
-# of the lounge doors. 
-# 
-# When a visitor tries to pull open the door handle (request the dashboard URL):
-# 1. The Bouncer checks if they are wearing the active visitor session wristband.
-# 2. If yes, the bouncer smiles and lets them inside to see their details.
-# 3. If no, the bouncer immediately stops them, grabs their arm, and walks them back 
-#    to the lobby reception desk (redirects them straight to the Login page!).
-# ==============================================================================
+# Note: The dashboard_view has been completely moved to the store app to maintain modular separation of concerns.
 
-# We place the bouncer decorator directly above our dashboard view function.
-# This single line protects the entire view from anonymous guest visits.
-@login_required
-def dashboard_view(request):
-    # If the bouncer lets them pass, request.user will hold the authenticated User object.
-    # We load our protected dashboard template and return it to the logged-in user.
-    return render(request, 'dashboard.html')
 
 
 # ==============================================================================
